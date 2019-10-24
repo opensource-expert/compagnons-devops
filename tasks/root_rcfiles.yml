@@ -1,0 +1,17 @@
+---
+# install some rc files for my root user
+- name: install root vimrc
+  copy:
+    src: files/root_vimrc.vim
+    dest: /root/.vimrc
+    owner: root
+    group: root
+    mode: 0600
+
+- name: install root bashrc
+  copy:
+    src: files/root_bashrc
+    dest: /root/.bashrc
+    owner: root
+    group: root
+    mode: 0600

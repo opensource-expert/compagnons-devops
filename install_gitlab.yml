@@ -1,0 +1,63 @@
+---
+# vim: set et ts=2 sts=2 sw=2:
+#
+# installtion of a gitlab server community edition
+#
+
+- hosts: gitlab
+  gather_facts: true
+  vars:
+    gitlab_url: "http://gitlab.example.com"
+
+  tasks:
+    - name: install all server base
+      include: tasks/server_base.yml
+      tags: server_base
+
+    - name: Install packages
+      apt:
+        name:
+        - curl
+        - vim
+        - openssh-server
+        - ca-certificates
+        - postfix
+        - mailutils
+
+    - name: ufw add allow rules
+      ufw:
+        rule: allow
+        port: "{{item}}"
+      with_items:
+        - http
+        - https
+
+    - name: create a swap file 4G
+      include: tasks/swapfile_add.yml
+      vars:
+        swap_size: 4G
+
+    - name: fetch gitlab bash installer
+      get_url:
+        url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+        checksum: sha256:91ec0649c4af77420c4acf4fd69bad8917c00d9b0372e228aee174fa4842bef4
+        dest: "/tmp/gitlab-ce.deb.sh"
+        mode: 0700
+
+    - name: install root rc files
+      include: tasks/root_rcfiles.yml
+
+    - name: run gitlab-ce.deb.sh
+      command: /tmp/gitlab-ce.deb.sh
+      args:
+        creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+
+    - name: install gitlab via package
+      apt:
+        update_cache: yes
+        name:
+          - gitlab-ce
+      environment:
+        GITLAB_URL: "{{gitlab_url}}"
+        EXTERNAL_URL: "{{gitlab_url}}"
+

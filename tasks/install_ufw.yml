@@ -1,0 +1,14 @@
+---
+# vim: et ts=2 sw=2 sts=2:
+- name: ufw basic allow rules
+  ufw:
+    rule: allow
+    port: "{{item}}"
+  with_items:
+    - ssh
+
+- name: ufw deny other incoming
+  ufw:
+    state: enabled
+    direction: incoming
+    policy: deny

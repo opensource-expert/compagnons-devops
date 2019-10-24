@@ -1,0 +1,35 @@
+---
+# vim: set et ts=2 sts=2 sw=2:
+#
+# Objective: install our server defaults
+#
+- block:
+  - name: fix perl locale
+    include: tasks/fix_perl_locale.yml
+    tags: locale
+
+  - name: set timezone Europe/Paris
+    timezone:
+      name: "Europe/Paris"
+    tags: timezone
+
+  - name: Install debian packages
+    include: tasks/install_packages_base.yml
+    tags:
+      - apt
+      - acl
+
+  - name: remount / with acl
+    mount:
+      path: /
+      src: "{{ansible_mounts[0].uuid}}"
+      fstype: ext4
+      opts: "{{ansible_mounts[0].options}},acl"
+      state: mounted
+    tags: acl
+
+  - name: Install ufw rules
+    include: tasks/install_ufw.yml
+    tags: ufw
+
+  tags: server_base

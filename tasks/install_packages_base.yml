@@ -1,0 +1,33 @@
+---
+# vim: et ts=2 sw=2 sts=2:
+
+- block:
+  - name: "APT: Pre-install aptitude package for ansible"
+    apt:
+      name:
+        - aptitude
+        - python-apt
+      force_apt_get: yes
+      update_cache: yes
+
+  - name: Install packages
+    package:
+      update_cache: no
+      name:
+        - vim
+        - tree
+        - git
+        - less
+        - etckeeper
+        - ufw
+        - bash-completion
+        - passwdqc
+        - ssh
+        - rsync
+        - fail2ban
+        # for ansible Becoming an Unprivileged User
+        - acl
+        - curl
+  tags:
+    - acl
+    - apt

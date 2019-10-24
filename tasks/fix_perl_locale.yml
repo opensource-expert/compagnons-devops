@@ -1,0 +1,13 @@
+---                                                               
+# vim: et ts=2 sw=2 sts=2:
+- name: uncomment locale fr_FR.UTF-8
+  replace:
+    path: /etc/locale.gen
+    regexp: '^#\s*(fr_FR.UTF-8.*)'
+    replace:   '\1'
+  register: locale_gen
+
+- name: "generate locales default: en_US.UTF-8"
+  command: locale-gen en_US.UTF-8
+  when: locale_gen.changed
+
