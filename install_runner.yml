@@ -1,0 +1,54 @@
+---
+# vim: set et ts=2 sts=2 sw=2:
+#
+# installtion of a gitlab runner
+# real  1m34,147s
+
+- hosts: runner
+  gather_facts: true
+  vars:
+    runner_tmp_apt: "/tmp/gitlab-runner.deb.sh"
+
+  tasks:
+    - name: install all server base
+      include: tasks/server_base.yml
+      tags: server_base
+
+    - name: Install packages
+      apt:
+        name:
+        - curl
+        - ca-certificates
+        - git-lfs
+
+    - name: fetch gitlab bash installer
+      get_url:
+        url: https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh
+        checksum: sha256:596188ec273efcbc6e3cfc3490ffe5e47099b71c02be939106903b83d5bd786d
+        dest: "{{runner_tmp_apt}}"
+        mode: 0700
+
+    - name: install root rc files
+      include: tasks/root_rcfiles.yml
+
+    - name: run gitlab runner apt install script
+      command: "{{runner_tmp_apt}}"
+      args:
+        creates: /etc/apt/sources.list.d/runner_gitlab-runner.list
+
+    - name: install gitlab via package
+      apt:
+        update_cache: yes
+        name:
+          gitlab-runner
+
+    # https://gitlab.com/gitlab-org/gitlab-runner/issues/4092
+    - name: fix debian buster bash_logout bug on gitlab-runner
+      file:
+        name: /home/gitlab-runner/.bash_logout
+        state: absent
+
+    #- name: register runner
+    #  command:
+
+
